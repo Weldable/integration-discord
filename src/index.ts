@@ -1,4 +1,4 @@
-import { defineIntegration, createRestHandler } from '@weldable/integration-core'
+import { defineIntegration, createRestHandler, fakeId, fakeArray, fakeIsoTimestamp, deriveSeed } from '@weldable/integration-core'
 
 const rest = createRestHandler()
 
@@ -68,6 +68,12 @@ export default defineIntegration({
         path: '/channels/{channel_id}/messages',
         paramMapping: { channel_id: 'path', content: 'body' },
       }),
+      mockExecute: async (args, ctx) => ({
+        id: fakeId(ctx.seed, 18),
+        channel_id: String(args.channel_id ?? fakeId(deriveSeed(ctx.seed, 'ch'), 18)),
+        timestamp: fakeIsoTimestamp(ctx.seed),
+        content: String(args.content ?? ''),
+      }),
     },
     {
       actionId: 'read_messages',
@@ -118,6 +124,15 @@ export default defineIntegration({
         method: 'GET',
         path: '/channels/{channel_id}/messages',
         paramMapping: { channel_id: 'path', limit: 'query', before: 'query', after: 'query' },
+      }),
+      mockExecute: async (_args, ctx) => ({
+        messages: fakeArray(ctx.seed, 3, (s) => ({
+          id: fakeId(s, 18),
+          author: { id: fakeId(deriveSeed(s, 'a'), 18), username: `user-${s.slice(-4)}` },
+          content: `Mock Discord message ${s.slice(-4)}`,
+          timestamp: fakeIsoTimestamp(s),
+          attachments: [],
+        })),
       }),
     },
     {
@@ -435,6 +450,15 @@ export default defineIntegration({
         path: '/guilds/{guild_id}/channels',
         paramMapping: { guild_id: 'path' },
       }),
+      mockExecute: async (_args, ctx) => ({
+        channels: fakeArray(ctx.seed, 3, (s) => ({
+          id: fakeId(s, 18),
+          name: `channel-${s.slice(-4)}`,
+          type: 0,
+          position: 0,
+          parent_id: null,
+        })),
+      }),
     },
     {
       actionId: 'get_channel',
@@ -641,6 +665,13 @@ export default defineIntegration({
         method: 'GET',
         path: '/users/@me/guilds',
         paramMapping: { limit: 'query' },
+      }),
+      mockExecute: async (_args, ctx) => ({
+        guilds: fakeArray(ctx.seed, 2, (s) => ({
+          id: fakeId(s, 18),
+          name: `Mock Server ${s.slice(-4)}`,
+          icon: null,
+        })),
       }),
     },
     {
