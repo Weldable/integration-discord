@@ -17,8 +17,26 @@ npm install @weldable/integration-discord @weldable/integration-core
 ```ts
 import integration from '@weldable/integration-discord'
 
-// Pass to a Weldable-compatible host
-console.log(integration.actions.map(a => a.id))
+// Send a message to a channel
+const send = integration.actions.find(a => a.id === 'discord.send_message')!
+
+const result = await send.execute(
+  {
+    channel_id: '1234567890123456789',
+    content: 'Deployment to production succeeded.',
+  },
+  ctx, // ActionContext from your Weldable-compatible host
+)
+
+console.log(result.id) // Discord message snowflake ID
+
+// Read recent messages
+const read = integration.actions.find(a => a.id === 'discord.read_messages')!
+
+const messages = await read.execute(
+  { channel_id: '1234567890123456789', limit: 10 },
+  ctx,
+)
 ```
 
 ## Contributing and releasing
